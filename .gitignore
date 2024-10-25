@@ -1,0 +1,7 @@
+# Common files to ignore:
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+.idea
