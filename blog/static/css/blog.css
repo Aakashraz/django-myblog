@@ -10,7 +10,7 @@ a {
 }
 
 h1 {
-    font-weight:normal;
+    font-weight:bolder;
     border-bottom:1px solid #bbb;
     padding:0 0 10px 0;
 }
@@ -37,7 +37,8 @@ h2 {
 p.date {
     color:#ccc;
     font-family: georgia, serif;
-    font-size: 12px;
+    font-size: 15px;
+    font-weight: bolder;
     font-style: italic;
 }
 
