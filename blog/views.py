@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 from .models import Post
 from django.http import Http404
 
@@ -23,3 +23,9 @@ def post_detail(request, pk):
         'blog/post/detail.html',
         {'post': post}
     )
+
+
+# example use of reverse and redirect
+def redirect_me(request):
+    url = reverse('blog:post_detail', kwargs={'pk': 10})
+    return redirect(url)
