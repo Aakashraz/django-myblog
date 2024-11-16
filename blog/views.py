@@ -12,12 +12,25 @@ def post_list(request):
     )
 
 
-def post_detail(request, pk):
+def post_detail(request, year, month, day, post):
     # try:
     #     post = Post.published.get(id=pk)
     # except Post.DoesNotExist:
     #     raise Http404("NO POST FOUND")
-    post = get_object_or_404(Post, id=pk, status=Post.Status.PUBLISHED)
+
+    # to check the value fetched from the URL pattern.
+    print(f"Year: {year}")
+    print(f"Month: {month}")
+    print(f"Day: {day}")
+    print(f"Post slug: {post}")
+
+    post = get_object_or_404(Post,
+                             status=Post.Status.PUBLISHED,
+                             slug=post,
+                             publish__year=year,
+                             publish__month=month,
+                             publish__day=day
+                             )
     return render(
         request,
         'blog/post/detail.html',
