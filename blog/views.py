@@ -6,14 +6,15 @@ from django.core.paginator import Paginator
 
 def post_list(request):
     published_list = Post.published.all()
-    paginator = Paginator(published_list, 2)
+    paginator = Paginator(published_list, 3)
+    page_number = request.GET.get('page', 1)
     # We retrieve the page GET HTTP parameter and store it in the page_number variable.
     # This parameter contains the requested page number. If the page parameter is not in the GET parameters
     # of the request, we use the default value 1 to load the first page of results.
-    page_number = request.GET.get('page', 1)
+
+    posts = paginator.page(page_number)
     # We obtain the objects for the desired page by calling the page() method of Paginator. This
     # method returns a Page object that we store in the posts variable.
-    posts = paginator.page(page_number)
 
     return render(
         request,
