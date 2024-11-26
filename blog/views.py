@@ -14,7 +14,39 @@ class PostListView(ListView):
     paginate_by = 3
     template_name = 'blog/post/list.html'
 
+    # In ListView, following is the information related to pagination
+    # paginator: The Paginator object
+    # page_obj: The current page of objects
+    # is_paginated: Boolean indicating if pagination is active
 
+    def get_context_data(self, **kwargs):
+        # First get the default context from the parent class (ListView)
+        context = super().get_context_data(**kwargs)
+        print("Context before pagination:", context)
+        # Get the paginator object from the context
+        paginator = context['paginator']
+        # Retrieve the page number from the GET request
+        page_number = self.request.GET.get('page', 1)
+
+        # Handle different pagination scenarios
+        try:
+            page_number = int(page_number)
+            posts = paginator.page(page_number)
+
+        except (ValueError, PageNotAnInteger):
+            # Default to first page if page is not an integer
+            posts = paginator.page(1)
+        except EmptyPage:
+            # Default to last page if page is out of range
+            posts = paginator.page(paginator.num_pages)
+
+        # Update the paginated posts to the context
+        context['posts'] = posts
+        print("Final context:", context)
+        return context
+
+
+# Function Based View for post_list
 def post_list(request):
     published_list = Post.published.all()
     paginator = Paginator(published_list, 3)
