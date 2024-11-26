@@ -18,6 +18,9 @@
         {#  truncatewords truncates the value to the number of words specified, #}
         {#   and linebreaks converts the output into HTML line breaks.    #}
     {% endfor %}
-{#    for pagination purpose#}
-    {% include "pagination.html" with page=posts %}
+{#    for pagination purpose #}
+{#    this is used while using the function based views #}
+{#    {% include "pagination.html" with page=posts %}#}
+{#    this is used while using the class-based views, here ListView #}
+    {% include "pagination.html" with page=page_obj %}
 {% endblock %}
