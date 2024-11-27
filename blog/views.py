@@ -3,8 +3,36 @@ from .models import Post
 from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
+from .forms import EmailPostForm
 
 
+# for handling forms
+def post_share(request, post_id):
+    # Retrieve post by id
+    post = get_object_or_404(
+        Post,
+        id=post_id,
+        status=Post.Status.PUBLISHED
+    )
+    if request.method == "POST":
+        form = EmailPostForm(request.POST)
+        # If the form is valid, the validated data is retrieved with form.cleaned_data. This attribute is a
+        # dictionary of form fields and their values.
+        if form.is_valid():
+            # Form fields passed validation
+            cd = form.cleaned_data
+            # ... send email
+    else:
+        form = EmailPostForm()
+
+    return render(request,'blog/post/share.html', {
+        'post': post,
+        'form': form
+    }
+    )
+
+
+# Class Based View for post_list
 class PostListView(ListView):
     """
     Alternative post list view
