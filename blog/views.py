@@ -4,6 +4,7 @@ from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
 from .forms import EmailPostForm
+from django.core.mail import send_mail
 
 
 # for handling forms
@@ -14,6 +15,11 @@ def post_share(request, post_id):
         id=post_id,
         status=Post.Status.PUBLISHED
     )
+    # setting initial value of 'sent' to False
+    # later used in the template to display a success
+    # message when the form is successfully submitted
+    sent = False
+
     if request.method == "POST":
         form = EmailPostForm(request.POST)
         # If the form is valid, the validated data is retrieved with form.cleaned_data. This attribute is a
@@ -21,13 +27,38 @@ def post_share(request, post_id):
         if form.is_valid():
             # Form fields passed validation
             cd = form.cleaned_data
-            # ... send email
+            # to build a complete url, including HTTP schema and hostname
+            # post.get_absolute_url() returns the relative URL for a specific post
+            # build_absolute_uri() converts it to a complete, absolute URL
+            post_url = request.build_absolute_uri(post.get_absolute_url())
+
+            subject = (
+                f"{cd['name']} ({cd['email']})"
+                f"recommends you read {post.title}"
+            )
+            message = (
+                f"Read {post.title} at {post_url}\n\n"
+                f"{cd['name']} \'s comments: {cd['comments']}"
+            )
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=None,
+                recipient_list=[cd['to']]
+            )
+            # In the from_email parameter, we pass the None value,
+            # so the value of the DEFAULT_FROM_EMAIL setting will be used for the sender.
+            # Finally, we send the email to the email address contained in the to field of the form
+
+            sent = True
+
     else:
         form = EmailPostForm()
 
     return render(request,'blog/post/share.html', {
         'post': post,
-        'form': form
+        'form': form,
+        'sent': sent,
     }
     )
 
@@ -50,7 +81,8 @@ class PostListView(ListView):
     def get_context_data(self, **kwargs):
         # First get the default context from the parent class (ListView)
         context = super().get_context_data(**kwargs)
-        print("Context before pagination:", context)
+        # print("Context before pagination:", context)
+
         # Get the paginator object from the context
         paginator = context['paginator']
         # Retrieve the page number from the GET request

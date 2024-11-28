@@ -9,4 +9,7 @@
     </p>
     {{ post.body|linebreaks }}
 {#    linebreaks converts the output into HTML line breaks.#}
+    <p>
+        <a href="{% url "blog:post_share" post.id %}">Share this post</a>
+    </p>
 {% endblock %}
