@@ -22,11 +22,13 @@ def post_share(request, post_id):
 
     if request.method == "POST":
         form = EmailPostForm(request.POST)
+
         # If the form is valid, the validated data is retrieved with form.cleaned_data. This attribute is a
         # dictionary of form fields and their values.
         if form.is_valid():
             # Form fields passed validation
             cd = form.cleaned_data
+
             # to build a complete url, including HTTP schema and hostname
             # post.get_absolute_url() returns the relative URL for a specific post
             # build_absolute_uri() converts it to a complete, absolute URL
@@ -34,7 +36,7 @@ def post_share(request, post_id):
 
             subject = (
                 f"{cd['name']} ({cd['email']})"
-                f"recommends you read {post.title}"
+                f" recommends you read {post.title}"
             )
             message = (
                 f"Read {post.title} at {post_url}\n\n"
