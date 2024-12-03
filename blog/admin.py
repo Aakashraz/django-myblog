@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post
+from .models import Post, Comment
 
 
 # Register your models here.
@@ -18,3 +18,10 @@ class PostAdmin(admin.ModelAdmin):
     # django 5.0 new introduced feature
     # Adding facet counts to the filters
     show_facets = admin.ShowFacets.ALWAYS
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'post', 'created_on', 'active']
+    list_filter = ['active', 'created_on', 'updated_on']
+    search_fields = ['name', 'email', 'body']
