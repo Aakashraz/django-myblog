@@ -21,6 +21,8 @@ def post_share(request, post_id):
     sent = False
 
     if request.method == "POST":
+        # request.method == "POST" checks if the form is being submitted (HTTP POST request)
+        # form = EmailPostForm(request.POST) creates a form instance
         form = EmailPostForm(request.POST)
 
         # If the form is valid, the validated data is retrieved with form.cleaned_data. This attribute is a
@@ -36,10 +38,10 @@ def post_share(request, post_id):
 
             subject = (
                 f"{cd['name']} ({cd['email']})"
-                f" recommends you read {post.title}"
+                f" recommends you read \"{post.title}\""
             )
             message = (
-                f"Read {post.title} at {post_url}\n\n"
+                f"Read \"{post.title}\" at {post_url}\n\n"
                 f"{cd['name']} \'s comments: {cd['comments']}"
             )
             send_mail(
@@ -56,6 +58,8 @@ def post_share(request, post_id):
 
     else:
         form = EmailPostForm()
+        # This prepares a blank form for the user to fill out
+        # Essentially, it renders the form without any pre-filled data or validation errors
 
     return render(request,'blog/post/share.html', {
         'post': post,
