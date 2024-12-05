@@ -11,4 +11,5 @@ urlpatterns = [
          views.post_detail, name='post_detail'),
     path('redirect/', views.redirect_me, name='redirect_me'),
     path('<int:post_id>/share/', views.post_share, name='post_share'),
+    path('<int:post_id>/comment/', views.post_comment, name='post_comment'),
 ]
