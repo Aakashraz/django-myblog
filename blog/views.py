@@ -1,10 +1,32 @@
+from django.core.mail import send_mail
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from .models import Post
 from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.decorators.http import require_POST
+
 from django.views.generic import ListView
-from .forms import EmailPostForm
-from django.core.mail import send_mail
+from .forms import EmailPostForm, CommentForm
+
+
+@require_POST
+def post_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+    comment = None
+    # A comment was posted
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+        # Create a Comment object without saving it to the database
+        comment = form.save(commit=False)
+        # Assign the post to the comment
+        comment.post = post
+        # Save the comment to the database
+        comment.save()
+    return render(request, 'blog/post/comment.html', {
+        'post': post,
+        'form': form,
+        'comment': comment,
+    })
 
 
 # for handling forms
@@ -21,6 +43,8 @@ def post_share(request, post_id):
     sent = False
 
     if request.method == "POST":
+        # request.method == "POST" checks if the form is being submitted (HTTP POST request)
+        # form = EmailPostForm(request.POST) creates a form instance
         form = EmailPostForm(request.POST)
 
         # If the form is valid, the validated data is retrieved with form.cleaned_data. This attribute is a
@@ -36,10 +60,10 @@ def post_share(request, post_id):
 
             subject = (
                 f"{cd['name']} ({cd['email']})"
-                f" recommends you read {post.title}"
+                f" recommends you read \"{post.title}\""
             )
             message = (
-                f"Read {post.title} at {post_url}\n\n"
+                f"Read \"{post.title}\" at {post_url}\n\n"
                 f"{cd['name']} \'s comments: {cd['comments']}"
             )
             send_mail(
@@ -56,6 +80,8 @@ def post_share(request, post_id):
 
     else:
         form = EmailPostForm()
+        # This prepares a blank form for the user to fill out
+        # Essentially, it renders the form without any pre-filled data or validation errors
 
     return render(request,'blog/post/share.html', {
         'post': post,
@@ -156,10 +182,23 @@ def post_detail(request, year, month, day, post):
                              publish__month=month,
                              publish__day=day
                              )
+
+    # List of active comments for this post
+    # We use the comments manager for
+    # the related Comment objects that we previously defined in the Comment
+    # model, using the related_name attribute of the ForeignKey field to the Post model.
+    comments = post.comments.filter(active=True)
+    # Form for users to comment
+    form = CommentForm()
+
     return render(
         request,
         'blog/post/detail.html',
-        {'post': post}
+        {
+            'post': post,
+            'comments': comments,
+            'form': form,
+        }
     )
 
 
