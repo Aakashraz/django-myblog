@@ -4,9 +4,11 @@
 
 {% block content %}
     {% if comment %}
+        <!-- Show success message if comment was successfully added -->
         <h2> Your comment has been added.</h2>
         <p><a href="{{ post.get_absolute_url }}"> Back to the post</a></p>
     {% else %}
+        <!-- If no comment (form invalid or first load), show comment form -->
         {% include "blog/post/includes/comment_form.html" %}
     {% endif %}
 {% endblock %}

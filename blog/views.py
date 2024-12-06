@@ -9,7 +9,7 @@ from django.views.generic import ListView
 from .forms import EmailPostForm, CommentForm
 
 
-@require_POST
+@require_POST   # Ensures only POST requests are accepted
 def post_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
     comment = None
