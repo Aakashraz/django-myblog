@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 
 from django.views.generic import ListView
 from .forms import EmailPostForm, CommentForm
+from taggit.models import Tag
 
 
 @require_POST   # Ensures only POST requests are accepted
@@ -135,8 +136,16 @@ class PostListView(ListView):
 
 
 # Function Based View for post_list
-def post_list(request):
+# The None default allows flexible routing - the view can handle URLs with or without a tag parameter.
+def post_list(request, tag_slug=None):
     published_list = Post.published.all()
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        published_list = published_list.filter(tags__in=[tag])
+        # the above line filters the published_list to include only posts associated
+        # with the specific tag from the URL
+
     paginator = Paginator(published_list, 3)
     page_number = request.GET.get('page', 1)
     # We retrieve the page GET HTTP parameter and store it in the page_number variable.
@@ -159,7 +168,10 @@ def post_list(request):
     return render(
         request,
         'blog/post/list.html',
-        {'posts': posts}
+        {
+            'posts': posts,
+            'tag': tag,
+        }
     )
 
 
