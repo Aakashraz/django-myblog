@@ -143,6 +143,8 @@ def post_list(request, tag_slug=None):
     if tag_slug:
         tag = get_object_or_404(Tag, slug=tag_slug)
         published_list = published_list.filter(tags__in=[tag])
+        # the above line filters the published_list to include only posts associated
+        # with the specific tag from the URL
 
     paginator = Paginator(published_list, 3)
     page_number = request.GET.get('page', 1)

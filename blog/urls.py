@@ -8,6 +8,8 @@ urlpatterns = [
     path('', views.post_list, name='post_list'),
     path('tag/<slug:tag_slug>/', views.post_list, name='post_list_by_tag'),
     # both above patterns points to the same view, but they have different names.
+    # The first pattern will call the post_list view without any optional parameters,
+    #  whereas the second pattern will call the view with the tag_slug parameter.
     # path('', views.PostListView.as_view(), name='post_list'),
 
     path('<int:year>/<int:month>/<int:day>/<slug:post>/',
