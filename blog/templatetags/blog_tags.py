@@ -1,6 +1,10 @@
 from django import template
 from django.db.models import Count
+import markdown
+from django.utils.safestring import mark_safe
+
 from ..models import Post
+
 
 # Each module that contains template tags needs to define a variable called register to be a valid tag
 # library. This variable is an instance of template.Library, and it’s used to register the template tags
@@ -44,3 +48,22 @@ def get_most_commented_posts(count=5):
     # .order_by('-total_comments') sorts the posts by their comment count, with the minus sign meaning
     # "highest to lowest" (like arranging posts from most commented to least commented)
     # [:count] takes just the top few posts based on the count parameter we specified
+
+
+@register.filter(name='markdown')
+def markdown_format(text):
+    return mark_safe(markdown.markdown(text))
+
+# The function markdown_format(text) takes the raw text (containing Markdown syntax) and:
+#
+# Uses markdown.markdown(text) to convert Markdown to HTML
+# Wraps with mark_safe() to tell Django this HTML is safe to render
+# Returns the safe HTML
+#
+# This lets you write blog posts in Markdown and automatically convert them to properly
+# formatted HTML in your templates using {{ post.body|markdown }}.
+
+# NOTE
+# In Django, HTML content is escaped by default for security. Use mark_safe cautiously,
+# only on content you control. Avoid using mark_safe on any content submitted by
+# non-staff users to prevent security vulnerabilities.
