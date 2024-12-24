@@ -21,6 +21,7 @@ from blog.sitemaps import PostSitemap
 
 
 sitemaps = {
+    # maps 'posts' section to PostSitemap class
     'posts': PostSitemap,
 }
 
@@ -28,9 +29,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('blog/', include('blog.urls', namespace='blog')),
     path(
-        'sitemap.xml',
-        sitemap,
-        {'sitemaps': sitemaps},
+        'sitemap.xml',  # URL will be yoursite.com/sitemap.xml
+        sitemap,        # Django's sitemap view
+        {'sitemaps': sitemaps},     # Passes our sitemap dictionary
         name='django.contrib.sitemaps.views.sitemap'
     )
 ]
