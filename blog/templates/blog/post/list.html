@@ -1,4 +1,5 @@
 {% extends "blog/base.html" %}
+{% load blog_tags %}
 
 {% block title %}My Blog {% endblock %}
 
@@ -29,7 +30,9 @@ list of items into one string, using a specific character or string to separate 
         <p class="date">
             Published {{ post.publish }} by {{ post.author }}
         </p>
-        {{ post.body|truncatewords:30|linebreaks }}
+        <!-- we have replaced the previous truncatewords filter with the truncatewords_html filter.
+            This filter truncates a string after a certain number of words, avoiding unclosed HTML tags. -->
+        {{ post.body|markdown|truncatewords_html:30|linebreaks }}
         {#  truncatewords truncates the value to the number of words specified, #}
         {#   and linebreaks converts the output into HTML line breaks.    #}
     {% endfor %}
