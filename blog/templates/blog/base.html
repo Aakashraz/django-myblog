@@ -23,6 +23,13 @@
             This is (A SideBar) my BLOG. <br>
             I've written {% total_posts %} posts so far.
         </p>
+        <!-- Adding RSS feed links-->
+        <p>
+            <a href='{% url "blog:post_feed" %}'>
+                Subscribe to my RSS feed
+            </a>
+        </p>
+
         <h3>Latest Posts</h3>
         <!-- Showing only 3 posts -->
         {% show_latest_posts 3 %}
