@@ -6,7 +6,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.decorators.http import require_POST
 
 from django.views.generic import ListView
-from django.contrib.postgres.search import SearchVector
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from .forms import EmailPostForm, CommentForm, SearchForm
 from taggit.models import Tag
 from django.db.models import Count
@@ -17,9 +17,17 @@ def post_search(request):
     form = SearchForm()
     query = None
     results = []
+    print("GET parameters:", request.GET)  # Shows all GET parameters
+    print("Search query:", request.GET.get('query'))  # Shows just the query value
 
+    # When user submits the form
     if 'query' in request.GET:
+        # request.GET is a dictionary-like object containing all GET parameters
+        # If user searched for "django tutorial", then:
+        # request.GET = {'query': 'django tutorial'}
         form = SearchForm(request.GET)
+        # creates new form with this data: SearchForm(request.GET)
+
         if form.is_valid():
             query = form.cleaned_data['query']
             results = (
@@ -27,6 +35,11 @@ def post_search(request):
                     search=SearchVector('title', 'body'),
                 ).filter(search=query)
             )
+        # Post.published starts with only published posts (likely filtered by a custom manager)
+        # .annotate() adds a new temporary field called 'search' to each post
+        # SearchVector('title', 'body') combines the text from both the title and body fields into a searchable format
+        # .filter(search=query) matches the user's query against this combined text
+
     return render(request,
                   'blog/post/search.html',
                   {
