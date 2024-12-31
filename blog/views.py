@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 
 from django.views.generic import ListView
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.db import connection
 from .forms import EmailPostForm, CommentForm, SearchForm
 from taggit.models import Tag
 from django.db.models import Count
@@ -18,7 +19,7 @@ def post_search(request):
     query = None
     results = []
     print("GET parameters:", request.GET)  # Shows all GET parameters
-    print("Search query:", request.GET.get('query'))  # Shows just the query value
+    print("Search query in GET request:", request.GET.get('query'))  # Shows just the query value
 
     # When user submits the form
     if 'query' in request.GET:
@@ -30,14 +31,39 @@ def post_search(request):
 
         if form.is_valid():
             query = form.cleaned_data['query']
-            results = (
-                Post.published.annotate(
-                    search=SearchVector('title', 'body'),
-                ).filter(search=query)
-            )
+            query_terms = query.strip().split()     # Handles spaces and splitting
+
+            # Handle empty query gracefully
+            if not query_terms:
+                results = []
+                print('Empty query')
+            else:
+
+                # The first term initializes the query
+                # config="spanish" >> executes stemming and removes stop words in Spanish
+                search_query = SearchQuery(query_terms[0], config='spanish')
+                # The loop iterates over the remaining terms (terms[1:]), adding each one
+                # to the search_query with the AND operator (&), OR operator(|)
+                for term in query_terms[1:]:
+                    search_query &= SearchQuery(term, config='spanish')
+
+                # This creates a combined searchable representation of the title and body fields.
+                # config="spanish" >> executes stemming and removes stop words in Spanish
+                search_vector = SearchVector('title', 'body', config='spanish')
+                results = (
+                    Post.published.annotate(
+                        search=search_vector,
+                        # Using SearchRank to rank results based on relevance
+                        rank=SearchRank(search_vector, search_query)
+                    )
+                    .filter(search=search_query)
+                    .order_by('-rank')
+                )
+                print(f'SEARCH QUERY: {search_query}')
+                print(connection.queries[-1])  # View the generated SQL
         # Post.published starts with only published posts (likely filtered by a custom manager)
         # .annotate() adds a new temporary field called 'search' to each post
-        # SearchVector('title', 'body') combines the text from both the title and body fields into a searchable format
+        # SearchVector('title', 'body') combines the text from both the title and body fields into a searchable formats
         # .filter(search=query) matches the user's query against this combined text
 
     return render(request,
