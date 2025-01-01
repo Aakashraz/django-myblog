@@ -6,7 +6,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.decorators.http import require_POST
 
 from django.views.generic import ListView
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, TrigramSimilarity
 from django.db import connection
 from .forms import EmailPostForm, CommentForm, SearchForm
 from taggit.models import Tag
@@ -31,7 +31,7 @@ def post_search(request):
 
         if form.is_valid():
             query = form.cleaned_data['query']
-            query_terms = query.strip().split()     # Handles spaces and splitting
+            query_terms = query.strip().split()  # Handles spaces and splitting
 
             # Handle empty query gracefully
             if not query_terms:
@@ -50,17 +50,31 @@ def post_search(request):
                 # This creates a combined searchable representation of the title and body fields.
                 # config="spanish" >> executes stemming and removes stop words in Spanish
                 search_vector = SearchVector('title', 'body', config='spanish')
+
+                # Example with usage of both SearchVector and SearchRank
+                # results = (
+                #     Post.published.annotate(
+                #         search=search_vector,
+                #         # Using SearchRank to rank results based on relevance
+                #         rank=SearchRank(search_vector, search_query)
+                #     )
+                #     .filter(search=search_query)
+                #     .order_by('-rank')
+                # )
+
+                # Example using TrigramSimilarity ONLY
                 results = (
                     Post.published.annotate(
-                        search=search_vector,
-                        # Using SearchRank to rank results based on relevance
-                        rank=SearchRank(search_vector, search_query)
-                    )
-                    .filter(search=search_query)
-                    .order_by('-rank')
+                        # The TrigramSimilarity function expects plain text (like a string or a field name)
+                        # for its comparison
+                        similarity=TrigramSimilarity('title', query) + TrigramSimilarity('body', query)
+                    ).filter(similarity__gt=0.1)
+                    .order_by('-similarity')
                 )
                 print(f'SEARCH QUERY: {search_query}')
-                print(connection.queries[-1])  # View the generated SQL
+                # Force execution by converting results to a list
+                list(results)
+                print(f'~~~~connection queries from database: {connection.queries[-1]}')  # View the generated SQL
         # Post.published starts with only published posts (likely filtered by a custom manager)
         # .annotate() adds a new temporary field called 'search' to each post
         # SearchVector('title', 'body') combines the text from both the title and body fields into a searchable formats
@@ -73,10 +87,10 @@ def post_search(request):
                       'query': query,
                       'results': results
                   }
-    )
+                  )
 
 
-@require_POST   # Ensures only POST requests are accepted
+@require_POST  # Ensures only POST requests are accepted
 def post_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
     comment = None
@@ -150,12 +164,12 @@ def post_share(request, post_id):
         # This prepares a blank form for the user to fill out
         # Essentially, it renders the form without any pre-filled data or validation errors
 
-    return render(request,'blog/post/share.html', {
+    return render(request, 'blog/post/share.html', {
         'post': post,
         'form': form,
         'sent': sent,
     }
-    )
+                  )
 
 
 # Class Based View for post_list
