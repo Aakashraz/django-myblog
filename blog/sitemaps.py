@@ -14,6 +14,8 @@ class PostSitemap(Sitemap):
     def lastmod(self, obj):
         return obj.updated_on
         # return obj.author
+
+        # if used the: return obj.author, it causes error.
         # The error occurs because the lastmod method must return a date/timestamp, not an author object.
         # The sitemap needs dates to show when content was last modified.
 

@@ -225,6 +225,9 @@ def post_list(request, tag_slug=None):
         published_list = published_list.filter(tags__in=[tag])
         # the above line filters the published_list to include only posts associated
         # with the specific tag from the URL
+    #     tags refers to a ManyToManyField (or ForeignKey) on the Post model that
+    #     represents the relationship between posts and tags.
+    #     tags = TaggableManager() from Post model.
 
     paginator = Paginator(published_list, 3)
     page_number = request.GET.get('page', 1)
