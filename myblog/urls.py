@@ -17,21 +17,24 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
-from blog.sitemaps import PostSitemap
+from blog.sitemaps import PostSitemap, TagSitemap
 
 
 sitemaps = {
     # maps 'posts' section to PostSitemap class
     'posts': PostSitemap,
+    'tags': TagSitemap,
 }
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('blog/', include('blog.urls', namespace='blog')),
     path(
-        'sitemap.xml',  # URL will be yoursite.com/sitemap.xml
-        sitemap,        # Django's sitemap view
+        'sitemap.xml',  # URL will be your_site.com/sitemap.xml
+        sitemap,        # Django's built-in view called (sitemap) located in django.contrib.sitemaps.views
         {'sitemaps': sitemaps},     # Passes our sitemap dictionary
         name='django.contrib.sitemaps.views.sitemap'
+        # the name given to a URL pattern is an internal identifier used for reverse URL lookup and does not
+        # affect the actual URL that users type in their browsers.
     )
 ]
